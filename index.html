@@ -363,7 +363,28 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
           </div>
         </div>
       </div>
-            <button id="o-settings-btn" style="width:100%;background:linear-gradient(135deg,#0a0a0a,#1a1a1a);color:white;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;letter-spacing:1px;">⚙️ IMPOSTAZIONI EVENTO E GIUDICI</button>
+            <!-- TIMER ESIBIZIONE -->
+      <div style="background:linear-gradient(135deg,#0a0800,#1a1500);border:1px solid rgba(212,175,55,0.3);border-radius:14px;padding:16px;margin-bottom:10px;">
+        <div style="font-size:11px;color:rgba(212,175,55,0.7);letter-spacing:2px;margin-bottom:10px;">⏱️ TIMER ESIBIZIONE</div>
+        <div style="text-align:center;margin-bottom:12px;">
+          <div id="timer-display" style="font-family:Playfair Display,serif;font-size:52px;font-weight:900;color:white;letter-spacing:2px;line-height:1;">00:00</div>
+          <div id="timer-status" style="font-size:11px;color:rgba(212,175,55,0.6);margin-top:4px;letter-spacing:1px;">PRONTO</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button onclick="timerStart()" style="flex:1;background:linear-gradient(135deg,#14520a,#16a34a);color:white;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">▶ START</button>
+          <button onclick="timerPause()" style="flex:1;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);color:white;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">⏸ PAUSA</button>
+          <button onclick="timerReset()" style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:white;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">↺ RESET</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="font-size:11px;color:rgba(212,175,55,0.6);">Durata:</span>
+          <button onclick="timerSetTime(60)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">1:00</button>
+          <button onclick="timerSetTime(90)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">1:30</button>
+          <button onclick="timerSetTime(120)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">2:00</button>
+          <button onclick="timerSetTime(180)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">3:00</button>
+          <button onclick="timerSetTime(240)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">4:00</button>
+        </div>
+      </div>
+      <button id="o-settings-btn" style="width:100%;background:linear-gradient(135deg,#0a0a0a,#1a1a1a);color:white;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;letter-spacing:1px;">⚙️ IMPOSTAZIONI EVENTO E GIUDICI</button>
       <button onclick="resetAll()" style="width:100%;background:linear-gradient(135deg,#991b1b,#ef4444);color:white;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;letter-spacing:1px;">🗑️ RESET TOTALE PARTECIPANTI E VOTI</button>
       <div class="add-form" style="border:2px solid #fde68a">
         <div class="add-title" style="color:#92400e">➕ Aggiungi partecipante</div>
@@ -406,6 +427,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
     <input id="s-edizione" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px;font-size:14px;outline:none;margin-bottom:10px;box-sizing:border-box" placeholder="Es. 2ª Edizione"/>
     
     <div style="font-size:11px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Data</div>
+    <div style="font-size:11px;color:#9ca3af;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;margin-top:12px;">🌅 Sfondo Pagina Login</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <input type="file" id="s-sfondo" accept="image/*" onchange="previewSfondo(this)" style="flex:1;font-size:11px;color:#374151;"/>
+      <button onclick="removeSfondo()" style="background:#fee2e2;border:none;border-radius:8px;padding:6px 10px;font-size:11px;color:#dc2626;cursor:pointer;white-space:nowrap;">Rimuovi</button>
+    </div>
+    <div id="s-sfondo-preview" style="width:100%;height:70px;border-radius:10px;background:#f3f4f6;margin-bottom:16px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:12px;color:#9ca3af;">Nessuna immagine</div>
     <input id="s-data" style="width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:10px;font-size:14px;outline:none;margin-bottom:16px;box-sizing:border-box" placeholder="Es. Data Evento"/>
 
     <!-- GIUDICI -->
@@ -774,6 +801,7 @@ function cambiaLingua(lang){
   var loginNome = document.getElementById('login-event-nome');
   // Aggiorna titoli schermata giudici
   refreshLoginLabels();
+    if(eventConfig.sfondobg) applySfondo(eventConfig.sfondobg);
   // Update login labels
   var sub = document.getElementById('login-sub');
   if(sub) sub.textContent = T('sistemaVal');
@@ -2278,6 +2306,106 @@ function showConfirmModal(title,msg,onConfirm){ document.getElementById('modal-c
 function showJudgeListScreen(){ var container=document.getElementById('judge-list-screen'); container.innerHTML=''; GIUDICI.forEach(function(g){ var btn=document.createElement('button'); btn.style.cssText='width:100%;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.3);border-radius:13px;padding:16px 18px;color:white;font-size:15px;font-weight:700;display:flex;align-items:center;gap:14px;cursor:pointer;text-align:left;'; var foto=eventConfig&&eventConfig.giudiciFoto&&eventConfig.giudiciFoto[g]; var ico=document.createElement('div'); ico.style.cssText='width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(212,175,55,0.4);background:#1a1500;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#d4af37;'; if(foto){ico.innerHTML='<img src="'+foto+'" style="width:100%;height:100%;object-fit:cover;"/>';}else{ico.textContent=g.charAt(0).toUpperCase();} var txt=document.createElement('div'); txt.innerHTML='<div style="font-weight:700;font-size:16px;">'+g+'</div><div style="font-size:11px;color:rgba(212,175,55,.7);letter-spacing:1px;margin-top:2px;">TOCCA PER ENTRARE</div>'; var arr=document.createElement('div'); arr.style.cssText='margin-left:auto;color:rgba(212,175,55,.5);font-size:20px;'; arr.textContent='›'; btn.appendChild(ico); btn.appendChild(txt); btn.appendChild(arr); btn.onclick=function(){ openJudgePin(g); }; container.appendChild(btn); }); showScreen('giudici-list'); }
 function resetSondaggi(){ showConfirmModal('Reset Valutazioni','Eliminare tutte le valutazioni dei giudici?',function(){ fetch(FB_URL+'/sondaggi.json',{method:'DELETE'}).then(function(){ showInfoModal('Fatto','Valutazioni eliminate!'); }).catch(function(){ showInfoModal('Errore','Impossibile eliminare.'); }); }); }
 function copyJudgeLink(){ var url='https://francescoalpina-boop.github.io/eventscorepro-app/'; if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){showInfoModal('Copiato','Link copiato!');});}else{showInfoModal('Link',url);} }
+
+// === TIMER ===
+var timerInterval = null;
+var timerSeconds = 0;
+var timerRunning = false;
+var timerMaxSeconds = 0;
+function timerSetTime(s){ timerReset(); timerMaxSeconds=s; updateTimerDisplay(); }
+function timerStart(){
+  if(timerRunning) return;
+  timerRunning=true;
+  document.getElementById('timer-status').textContent='IN CORSO...';
+  document.getElementById('timer-status').style.color='#4ade80';
+  timerInterval=setInterval(function(){
+    timerSeconds++;
+    updateTimerDisplay();
+    if(timerMaxSeconds>0 && timerSeconds>=timerMaxSeconds){
+      timerPause();
+      document.getElementById('timer-status').textContent='⚠️ TEMPO SCADUTO!';
+      document.getElementById('timer-status').style.color='#ef4444';
+      document.getElementById('timer-display').style.color='#ef4444';
+    } else if(timerMaxSeconds>0 && timerSeconds>=timerMaxSeconds-10){
+      document.getElementById('timer-display').style.color='#f59e0b';
+    }
+  },1000);
+}
+function timerPause(){
+  timerRunning=false;
+  clearInterval(timerInterval);
+  if(timerSeconds>0){ document.getElementById('timer-status').textContent='IN PAUSA'; document.getElementById('timer-status').style.color='rgba(212,175,55,0.6)'; }
+}
+function timerReset(){
+  timerPause();
+  timerSeconds=0;
+  document.getElementById('timer-display').style.color='white';
+  document.getElementById('timer-display').textContent='00:00';
+  document.getElementById('timer-status').textContent='PRONTO';
+  document.getElementById('timer-status').style.color='rgba(212,175,55,0.6)';
+}
+function updateTimerDisplay(){
+  var m=Math.floor(timerSeconds/60), s=timerSeconds%60;
+  document.getElementById('timer-display').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+}
+
+// === SFONDO ===
+function previewSfondo(input){
+  var file=input.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    eventConfig.sfondobg=e.target.result;
+    var prev=document.getElementById('s-sfondo-preview');
+    prev.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;"/>';
+    applySfondo(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+function removeSfondo(){
+  eventConfig.sfondobg=null;
+  document.getElementById('s-sfondo-preview').innerHTML='Nessuna immagine';
+  var sl=document.getElementById('screen-login');
+  sl.style.backgroundImage='';
+}
+function applySfondo(url){
+  if(!url) return;
+  var sl=document.getElementById('screen-login');
+  sl.style.backgroundImage='url('+url+')';
+  sl.style.backgroundSize='cover';
+  sl.style.backgroundPosition='center';
+  sl.style.backgroundBlendMode='overlay';
+}
+
+// === NOTIFICHE VOTI ===
+var lastVoteCount=0;
+function checkNotifiche(){
+  var total=0;
+  Object.values(allVoti||{}).forEach(function(jv){ total+=Object.keys(jv||{}).length; });
+  if(total>lastVoteCount && lastVoteCount>0){
+    var diff=total-lastVoteCount;
+    showToast('🗳️ '+diff+' nuovo'+(diff>1?'i voti inseriti!':' voto inserito!'));
+  }
+  lastVoteCount=total;
+  // Aggiorna contatore spettatori
+  updatePartCount();
+}
+function showToast(msg){
+  var n=document.createElement('div');
+  n.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#d4af37,#92740a);color:white;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.5);white-space:nowrap;';
+  n.textContent=msg;
+  document.body.appendChild(n);
+  setTimeout(function(){ n.style.opacity='0'; n.style.transition='opacity 0.5s'; setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); },500); },3000);
+}
+function updatePartCount(){
+  var el=document.getElementById('o-part-count');
+  if(el) el.textContent=concorrenti.length+' part.';
+}
+setInterval(checkNotifiche, 8000);
+
+// Applica sfondo al caricamento
+document.addEventListener('DOMContentLoaded', function(){
+  if(eventConfig && eventConfig.sfondobg) applySfondo(eventConfig.sfondobg);
+});
 </script>
 <!-- SCHERMATA PREMIAZIONE -->
 <div id="screen-premiazione" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#0f0c29,#1a0533);z-index:99999;font-family:Lato,sans-serif;overflow:hidden;">
