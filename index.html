@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <meta name="theme-color" content="#000"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
@@ -164,6 +164,39 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 .prog-sc{font-weight:700;font-size:12px;min-width:36px;}
 .jdg-bdgs{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
 .no-results{color:rgba(255,255,255,.4);text-align:center;padding:40px;}
+
+/* iOS keyboard fix */
+body { -webkit-overflow-scrolling: touch; }
+input, textarea, select { font-size: 16px !important; } /* prevents iOS zoom on focus */
+.modal-overlay { -webkit-overflow-scrolling: touch; }
+
+
+
+/* Toast */
+#toast-msg {
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) scale(0.8) !important;
+  background: #15803d !important;
+  color: #fff !important;
+  padding: 7px 16px !important;
+  border-radius: 16px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  z-index: 999999 !important;
+  opacity: 0 !important;
+  transition: all 0.2s ease !important;
+  pointer-events: none !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3) !important;
+  top: auto !important;
+}
+#toast-msg.show {
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1) !important;
+}
 </style>
 </head>
 <body>
@@ -454,7 +487,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 <div id="modal-judge-pin" style="display:none" class="modal-overlay">
   <div class="modal-box">
     <div style="position:relative;width:70px;height:70px;margin:0 auto 12px;">
-      <img src="" style="display:none" style="width:70px;height:70px;border-radius:50%;object-fit:cover;border:3px solid #d4af37;box-shadow:0 0 20px rgba(212,175,55,.4);"/>
+      <img id="judge-pin-avatar" src="" style="display:none;width:70px;height:70px;border-radius:50%;object-fit:cover;border:3px solid #d4af37;box-shadow:0 0 20px rgba(212,175,55,.4);"/>
       
     </div>
     <div class="modal-title" id="judge-pin-title">Accesso Giudice</div>
@@ -975,6 +1008,16 @@ function syncLoad(){
     });
   });
 }
+
+function showToast(msg, color) {
+  var t = document.getElementById('toast-msg');
+  if(!t) return;
+  t.textContent = msg || '✓ Salvato!';
+  t.style.background = color || 'rgba(34,197,94,0.95)';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
 function syncSave(){
   // Immediately update allVoti with current judge's votes
   if(giudice) allVoti[giudice] = voti;
@@ -1117,7 +1160,7 @@ function tryAdmin(){
     initOrganizzatore();
     showScreen('organizzatore');
     if(syncTimer) clearInterval(syncTimer);
-    syncTimer=setInterval(syncLoad,8000);
+    syncTimer=setInterval(syncLoad,5000); // 5s for organizer
   } else {
     document.getElementById('admin-pin-err').style.display='block';
     document.getElementById('admin-pin-input').value='';
@@ -1131,12 +1174,12 @@ function loginAs(g){
   document.getElementById('g-judge-name').textContent='⚖️ '+g;
   document.getElementById('g-logout').onclick=function(){showSondaggio();};
   document.getElementById('g-classifica').onclick=function(){fromScreen='giudice';renderClassifica();showScreen('classifica');document.getElementById('class-back').onclick=function(){showScreen('giudice');};};
-  document.getElementById('class-back').onclick=function(){showScreen('screen-'+fromScreen==='giudice'?'giudice':'organizzatore');};
+  document.getElementById('class-back').onclick=function(){showScreen(fromScreen==='giudice'?'giudice':'organizzatore');};
   initGiudiceTabs();
   renderGiudice();
   showScreen('giudice');
   if(syncTimer) clearInterval(syncTimer);
-  syncTimer=setInterval(syncLoad,8000);
+  syncTimer=setInterval(syncLoad,3000); // 3s while judging
 }
 
 function doLogout(){
@@ -1439,6 +1482,7 @@ function saveVote(){
   var scores={}; for(var k in currentScores) scores[k]=currentScores[k];
   voti[currentIdx]={scores:scores,note:document.getElementById('vote-notes').value};
   syncSave();
+  showToast('✓ Voto salvato!');
   showScreen(mode==='giudice'?'giudice':'organizzatore');
   renderCurrent();
 }
@@ -2334,6 +2378,23 @@ function showToast(msg){
   document.body.appendChild(n);
   setTimeout(function(){ n.style.opacity='0'; n.style.transition='opacity 0.5s'; setTimeout(function(){ if(n.parentNode) n.parentNode.removeChild(n); },500); },3000);
 }
+
+// iOS back button fix
+window.addEventListener('popstate', function(e) {
+  // find any open modal and close it
+  var modals = document.querySelectorAll('[id^="modal-"], [id^="screen-"]');
+  for(var i=0; i<modals.length; i++){
+    if(modals[i].style.display !== 'none' && modals[i].style.display !== ''){
+      modals[i].style.display = 'none';
+      history.pushState(null, '', location.href);
+      return;
+    }
+  }
+});
+// Push state when opening modals - patch showScreen
+var _origShowScreen = typeof showScreen === 'function' ? showScreen : null;
+
+
 function updatePartCount(){
   var el=document.getElementById('o-part-count');
   if(el) el.textContent=concorrenti.length+' part.';
@@ -2444,5 +2505,7 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
+
+<div id="toast-msg">✓ Voto salvato!</div>
 </body>
 </html>
