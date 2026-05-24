@@ -801,6 +801,11 @@ function refreshGiudiceLanguage(){
   // Aggiorna modal judge pin
   var pinSub = document.getElementById('judge-pin-sub');
   if(pinSub) pinSub.textContent = T('inserisciNome');
+  // Aggiorna anche il titolo del popup se aperto
+  var pinModal = document.getElementById('modal-judge-pin');
+  if(pinModal && pinModal.style.display === 'flex' && pendingJudge){
+    document.getElementById('judge-pin-sub').textContent = T('inserisciNome');
+  }
   var pinInput = document.getElementById('judge-pin-input');
   if(pinInput) pinInput.placeholder = T('scriviNome');
   var pinCancel = document.getElementById('judge-pin-cancel');
@@ -1023,8 +1028,9 @@ function renderCurrent(){
 var pendingJudge = null;
 function openJudgePin(g){
   pendingJudge=g;
+  document.getElementById('judge-pin-title').textContent=T('giudice')+' '+g.replace(/[^0-9]/g,'')||g;
   document.getElementById('judge-pin-title').textContent=g;
-  document.getElementById('judge-pin-sub').textContent='Inserisci il tuo codice personale';
+  document.getElementById('judge-pin-sub').textContent=T('inserisciNome');
   document.getElementById('judge-pin-input').value='';
   document.getElementById('judge-pin-err').style.display='none';
   var av=document.getElementById('judge-pin-avatar');
