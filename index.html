@@ -363,27 +363,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
           </div>
         </div>
       </div>
-            <!-- TIMER ESIBIZIONE -->
-      <div style="background:linear-gradient(135deg,#0a0800,#1a1500);border:1px solid rgba(212,175,55,0.3);border-radius:14px;padding:16px;margin-bottom:10px;">
-        <div style="font-size:11px;color:rgba(212,175,55,0.7);letter-spacing:2px;margin-bottom:10px;">⏱️ TIMER ESIBIZIONE</div>
-        <div style="text-align:center;margin-bottom:12px;">
-          <div id="timer-display" style="font-family:Playfair Display,serif;font-size:52px;font-weight:900;color:white;letter-spacing:2px;line-height:1;">00:00</div>
-          <div id="timer-status" style="font-size:11px;color:rgba(212,175,55,0.6);margin-top:4px;letter-spacing:1px;">PRONTO</div>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <button onclick="timerStart()" style="flex:1;background:linear-gradient(135deg,#14520a,#16a34a);color:white;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">▶ START</button>
-          <button onclick="timerPause()" style="flex:1;background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);color:white;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">⏸ PAUSA</button>
-          <button onclick="timerReset()" style="flex:1;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:white;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;">↺ RESET</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <span style="font-size:11px;color:rgba(212,175,55,0.6);">Durata:</span>
-          <button onclick="timerSetTime(60)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">1:00</button>
-          <button onclick="timerSetTime(90)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">1:30</button>
-          <button onclick="timerSetTime(120)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">2:00</button>
-          <button onclick="timerSetTime(180)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">3:00</button>
-          <button onclick="timerSetTime(240)" style="background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.3);color:rgba(212,175,55,0.9);border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;">4:00</button>
-        </div>
-      </div>
+            
       <button id="o-settings-btn" style="width:100%;background:linear-gradient(135deg,#0a0a0a,#1a1a1a);color:white;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;letter-spacing:1px;">⚙️ IMPOSTAZIONI EVENTO E GIUDICI</button>
       <button onclick="resetAll()" style="width:100%;background:linear-gradient(135deg,#991b1b,#ef4444);color:white;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:14px;letter-spacing:1px;">🗑️ RESET TOTALE PARTECIPANTI E VOTI</button>
       <div class="add-form" style="border:2px solid #fde68a">
@@ -2307,48 +2287,6 @@ function showJudgeListScreen(){ var container=document.getElementById('judge-lis
 function resetSondaggi(){ showConfirmModal('Reset Valutazioni','Eliminare tutte le valutazioni dei giudici?',function(){ fetch(FB_URL+'/sondaggi.json',{method:'DELETE'}).then(function(){ showInfoModal('Fatto','Valutazioni eliminate!'); }).catch(function(){ showInfoModal('Errore','Impossibile eliminare.'); }); }); }
 function copyJudgeLink(){ var url='https://francescoalpina-boop.github.io/eventscorepro-app/'; if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){showInfoModal('Copiato','Link copiato!');});}else{showInfoModal('Link',url);} }
 
-// === TIMER ===
-var timerInterval = null;
-var timerSeconds = 0;
-var timerRunning = false;
-var timerMaxSeconds = 0;
-function timerSetTime(s){ timerReset(); timerMaxSeconds=s; updateTimerDisplay(); }
-function timerStart(){
-  if(timerRunning) return;
-  timerRunning=true;
-  document.getElementById('timer-status').textContent='IN CORSO...';
-  document.getElementById('timer-status').style.color='#4ade80';
-  timerInterval=setInterval(function(){
-    timerSeconds++;
-    updateTimerDisplay();
-    if(timerMaxSeconds>0 && timerSeconds>=timerMaxSeconds){
-      timerPause();
-      document.getElementById('timer-status').textContent='⚠️ TEMPO SCADUTO!';
-      document.getElementById('timer-status').style.color='#ef4444';
-      document.getElementById('timer-display').style.color='#ef4444';
-    } else if(timerMaxSeconds>0 && timerSeconds>=timerMaxSeconds-10){
-      document.getElementById('timer-display').style.color='#f59e0b';
-    }
-  },1000);
-}
-function timerPause(){
-  timerRunning=false;
-  clearInterval(timerInterval);
-  if(timerSeconds>0){ document.getElementById('timer-status').textContent='IN PAUSA'; document.getElementById('timer-status').style.color='rgba(212,175,55,0.6)'; }
-}
-function timerReset(){
-  timerPause();
-  timerSeconds=0;
-  document.getElementById('timer-display').style.color='white';
-  document.getElementById('timer-display').textContent='00:00';
-  document.getElementById('timer-status').textContent='PRONTO';
-  document.getElementById('timer-status').style.color='rgba(212,175,55,0.6)';
-}
-function updateTimerDisplay(){
-  var m=Math.floor(timerSeconds/60), s=timerSeconds%60;
-  document.getElementById('timer-display').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
-}
-
 // === SFONDO ===
 function previewSfondo(input){
   var file=input.files[0]; if(!file) return;
@@ -2483,3 +2421,28 @@ document.addEventListener('DOMContentLoaded', function(){
   </div>
 </div>
 
+<!-- INFO MODAL -->
+<div id="modal-info-helper" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-size:40px;margin-bottom:10px;">ℹ️</div>
+    <div id="modal-info-title" style="font-weight:800;font-size:17px;color:#111;margin-bottom:8px;"></div>
+    <div id="modal-info-content" style="font-size:14px;color:#4b5563;margin-bottom:20px;"></div>
+    <button onclick="document.getElementById('modal-info-helper').style.display='none'" style="width:100%;background:#111;color:white;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">OK</button>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="modal-confirm-helper" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999999;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
+    <div id="modal-confirm-title" style="font-weight:800;font-size:17px;color:#111;margin-bottom:8px;"></div>
+    <div id="modal-confirm-msg" style="font-size:14px;color:#4b5563;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('modal-confirm-helper').style.display='none'" style="flex:1;background:#f3f4f6;color:#374151;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">Annulla</button>
+      <button id="modal-confirm-ok" style="flex:1;background:#ef4444;color:white;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;">Conferma</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
