@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#000"/>
+<title>Classifica Live</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:linear-gradient(160deg,#0f0c29,#302b63,#24243e);min-height:100vh;font-family:Arial,sans-serif;color:white;padding:20px;}
+.header{text-align:center;padding:24px 20px 16px;}
+.header-logo{width:200px;object-fit:contain;margin-bottom:12px;}
+.event-name{font-family:Playfair Display,serif;font-size:28px;font-weight:900;color:white;margin-bottom:4px;}
+.event-sub{font-size:13px;color:rgba(212,175,55,.7);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);border-radius:20px;padding:4px 12px;font-size:11px;color:#d4af37;letter-spacing:2px;margin-top:8px;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:0 4px 12px;scrollbar-width:none;}
+.filters::-webkit-scrollbar{display:none;}
+.filter-btn{flex-shrink:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:6px 16px;font-size:12px;color:rgba(255,255,255,.7);cursor:pointer;font-weight:600;transition:.2s;}
+.filter-btn.active{background:rgba(212,175,55,.2);border-color:rgba(212,175,55,.5);color:#d4af37;}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.rank{font-family:Playfair Display,serif;font-size:22px;font-weight:900;color:rgba(255,255,255,.3);min-width:32px;text-align:center;}
+.rank.gold{color:#ffd700;}
+.rank.silver{color:#c0c0c0;}
+.rank.bronze{color:#cd7f32;}
+.medal{font-size:22px;min-width:32px;text-align:center;}
+.info{flex:1;}
+.name{font-weight:700;font-size:15px;color:white;}
+.sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px;}
+.score{font-family:Playfair Display,serif;font-size:24px;font-weight:900;color:#d4af37;}
+.empty{text-align:center;padding:60px 20px;opacity:.5;}
+.footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,.3);letter-spacing:2px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="live-badge"><div class="live-dot"></div> CLASSIFICA LIVE</div>
+  <div class="event-name" id="pub-nome">Nome Evento</div>
+  <div class="event-sub" id="pub-sub">Competition</div>
+</div>
+
+<div class="filters" id="pub-filters"></div>
+<div id="pub-list" style="padding:0 4px 40px;max-width:600px;margin:0 auto;"></div>
+
+<div class="footer">© EventScorePro — Aggiornamento automatico ogni 15 secondi</div>
+
+<script>
+var FB_URL = 'https://eventscorepro-default-rtdb.europe-west1.firebasedatabase.app';
+var eventConfig = {};
+var concorrenti = [];
+var allVoti = {};
+var currentFilter = 'TUTTI';
+
+function fbGet(path, cb){
+  fetch(FB_URL+'/'+path+'.json').then(function(r){return r.json();}).then(function(d){cb(d);}).catch(function(){cb(null);});
+}
+
+function loadAll(){
+  fbGet('config', function(c){
+    if(c){
+      eventConfig = c;
+      document.getElementById('pub-nome').textContent = c.nomeEvento || 'Nome Evento';
+      document.getElementById('pub-sub').textContent = (c.nomeCompetizione||'Competition') + ' — ' + (c.edizione||'');
+    }
+    fbGet('concorrenti', function(data){
+      concorrenti = data || [];
+      var giudici = (c && c.giudici) || [];
+      var pending = giudici.length || 1;
+      if(!giudici.length){ renderClassifica(); return; }
+      giudici.forEach(function(g){
+        fbGet('voti/'+g.replace(/ /g,'-').toLowerCase(), function(v){
+          if(v) allVoti[g] = v;
+          pending--;
+          if(pending===0) renderClassifica();
+        });
+      });
+    });
+  });
+}
+
+function renderClassifica(){
+  var generi = ['TUTTI'];
+  concorrenti.forEach(function(c){ if(c.genere && generi.indexOf(c.genere.toUpperCase())===-1) generi.push(c.genere.toUpperCase()); });
+  
+  var filtersEl = document.getElementById('pub-filters');
+  filtersEl.innerHTML = '';
+  generi.forEach(function(g){
+    var btn = document.createElement('button');
+    btn.className = 'filter-btn' + (g===currentFilter?' active':'');
+    btn.textContent = g;
+    btn.onclick = function(){ currentFilter=g; renderClassifica(); };
+    filtersEl.appendChild(btn);
+  });
+
+  var filtered = concorrenti.filter(function(c){ return currentFilter==='TUTTI' || (c.genere||'').toUpperCase()===currentFilter; });
+  
+  var scored = filtered.map(function(c){
+    var total=0, count=0;
+    Object.values(allVoti).forEach(function(jv){
+      var key = c.nome.replace(/ /g,'-').toLowerCase();
+      if(jv[key]){ var s=Object.values(jv[key]).reduce(function(a,b){return a+(parseFloat(b)||0);},0); total+=s; count++; }
+    });
+    return {nome:c.nome, genere:c.genere||'', tipo:c.tipo||'', score:count>0?total/count:0};
+  }).sort(function(a,b){return b.score-a.score;});
+
+  var list = document.getElementById('pub-list');
+  if(!scored.length){ list.innerHTML='<div class="empty">⏳<br><br>In attesa dei partecipanti...</div>'; return; }
+
+  list.innerHTML = '';
+  scored.forEach(function(item, i){
+    var card = document.createElement('div');
+    card.className = 'card';
+    var medals = ['🥇','🥈','🥉'];
+    var rankClass = i===0?'rank gold':i===1?'rank silver':i===2?'rank bronze':'rank';
+    card.innerHTML = '<div class="'+rankClass+'">'+(i<3?medals[i]:'#'+(i+1))+'</div><div class="info"><div class="name">'+item.nome+'</div><div class="sub">'+item.genere+(item.tipo?' · '+item.tipo:'')+'</div></div><div class="score">'+(item.score>0?item.score.toFixed(1):'—')+'</div>';
+    list.appendChild(card);
+  });
+}
+
+loadAll();
+setInterval(loadAll, 15000);
+</script>
+</body>
+</html>
