@@ -334,7 +334,8 @@ input, textarea, select { font-size: 16px !important; } /* prevents iOS zoom on 
   <div id="vote-hdr" class="vote-hdr">
     <button class="vote-back" id="vote-back">← INDIETRO</button>
     <div class="vote-top">
-      <div><div class="vote-sub-lbl" id="vote-sub"></div><div class="vote-nm" id="vote-nm"></div></div>
+      <div><div class="vote-sub-lbl" id="vote-sub"></div><div class="vote-nm" id="vote-nm"></div>
+    <div id="vote-coreo" style="display:none;font-size:12px;color:rgba(255,255,255,0.7);font-style:italic;margin-top:3px;letter-spacing:0.3px;"></div></div>
       <div><div class="vote-tot-lbl">MIO VOTO</div><div class="vote-tot-num" id="vote-tot">0</div><div class="vote-tot-max">/50</div></div>
     </div>
   </div>
@@ -418,6 +419,8 @@ input, textarea, select { font-size: 16px !important; } /* prevents iOS zoom on 
           <div class="slbl">Categoria</div>
           <div class="btn-row2" id="o-cat-sel"></div>
         </div>
+        <div class="slbl">🎵 Titolo Coreografia</div>
+        <input type="text" class="add-input" id="o-new-coreo" placeholder="Titolo coreografia (opzionale)..."/>
         <button class="btn-add" id="o-add-btn">Aggiungi ✓</button>
       </div>
       <div id="o-list"></div>
@@ -1358,6 +1361,12 @@ function makeParticipantCard(c,idx,col,isAdmin){
   var info=document.createElement('div'); info.style.flex='1'; info.style.minWidth='0';
   var nm=document.createElement('div'); nm.className='pname';
   nm.textContent=(c.numero?'#'+c.numero+' ':'')+c.nome;
+  if(c.coreografia){
+    var co=document.createElement('div');
+    co.style.cssText='font-size:11px;color:#6b7280;margin-top:2px;font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    co.textContent='🎵 '+c.coreografia;
+    info.appendChild(co);
+  }
   var meta=document.createElement('div'); meta.className='pmeta';
 
   // Genre badge
@@ -1424,6 +1433,8 @@ function openVote(i){
   hdr.style.background='linear-gradient(135deg,'+col.dark+','+col.accent+')';
   document.getElementById('vote-sub').textContent=TIPO_ICO[c.tipo]+' '+c.tipo+(c.catGruppo?' · '+c.catGruppo:'')+' · '+c.genere;
   document.getElementById('vote-nm').textContent=c.nome;
+  var voteCoreo=document.getElementById('vote-coreo');
+  if(voteCoreo){voteCoreo.textContent=c.coreografia?'🎵 '+c.coreografia:'';voteCoreo.style.display=c.coreografia?'block':'none';}
   document.getElementById('vote-notes').value=voti[i]?voti[i].note||'':'';
   document.getElementById('btn-save').style.background='linear-gradient(135deg,'+col.dark+','+col.accent+')';
 
@@ -1640,8 +1651,10 @@ function doAggiungi(){
   var name=document.getElementById('o-new-name').value.trim();
   if(!name) return;
   var nextNum = concorrenti.length + 1;
-  concorrenti.push({nome:name,tipo:selTipo,genere:selGenere,catGruppo:selCat,blocked:false,numero:nextNum});
+  var coreo=document.getElementById('o-new-coreo').value.trim();
+  concorrenti.push({nome:name,tipo:selTipo,genere:selGenere,catGruppo:selCat,blocked:false,numero:nextNum,coreografia:coreo});
   document.getElementById('o-new-name').value='';
+  document.getElementById('o-new-coreo').value='';
   syncSave(); renderOrganizzatore();
 }
 
