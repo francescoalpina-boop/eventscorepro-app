@@ -319,6 +319,10 @@ input, textarea, select { font-size: 16px !important; } /* prevents iOS zoom on 
   </div>
   <div class="main-wrap" style="background:linear-gradient(160deg,#fdf4ff 0%,#f0f9ff 100%)">
     <div class="main-inner">
+      <div style="display:flex;gap:0;margin-bottom:12px;border-radius:12px;overflow:hidden;border:1.5px solid #e5e7eb;">
+        <button id="tab-da-votare" onclick="setVoteTab('da-votare')" style="flex:1;padding:10px 6px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:#7c3aed;color:white;transition:all .2s;">⭐ Da Votare <span id="tab-count-da-votare" style="background:rgba(255,255,255,.25);border-radius:8px;padding:1px 6px;font-size:11px;margin-left:4px;">0</span></button>
+        <button id="tab-votati" onclick="setVoteTab('votati')" style="flex:1;padding:10px 6px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:rgba(255,255,255,.08);color:#9ca3af;transition:all .2s;">✅ Votati <span id="tab-count-votati" style="background:rgba(255,255,255,.1);border-radius:8px;padding:1px 6px;font-size:11px;margin-left:4px;">0</span></button>
+      </div>
       <div id="g-list"></div>
       <button class="btn-classifica" id="g-classifica" style="display:none">🏆 VEDI CLASSIFICA</button>
     </div>
@@ -980,6 +984,7 @@ var SKEY='app-v1-concorrenti', vKey=function(g){return 'app-v1-voti-'+g.replace(
 // STATE
 var mode='login', giudice=null, concorrenti=[], voti={}, allVoti={};
 var currentIdx=null, currentScores={}, filtroGiudice='Tutti', filtroG='Tutti', filtroT='Tutti';
+var voteTab='da-votare';
 var selGenere=GENERI[0], selTipo=TIPI[0], selCat=CAT_GRUPPO[0];
 var filtroOrg='Tutti';
 var filtroC='Tutti';
@@ -1261,25 +1266,70 @@ function updateGiudiceTabs(){
 }
 
 // RENDER GIUDICE LIST
+
+function setVoteTab(tab){
+  voteTab = tab;
+  var btnDa = document.getElementById('tab-da-votare');
+  var btnVot = document.getElementById('tab-votati');
+  if(btnDa && btnVot){
+    if(tab === 'da-votare'){
+      btnDa.style.background = '#7c3aed'; btnDa.style.color = 'white';
+      btnVot.style.background = 'rgba(255,255,255,.08)'; btnVot.style.color = '#9ca3af';
+    } else {
+      btnVot.style.background = '#059669'; btnVot.style.color = 'white';
+      btnDa.style.background = 'rgba(255,255,255,.08)'; btnDa.style.color = '#9ca3af';
+    }
+  }
+  renderGiudice();
+}
+
 function renderGiudice(){
   updateGiudiceTabs();
   var list=document.getElementById('g-list');
   if(!list) return;
   list.innerHTML='';
-  var visible=concorrenti.filter(function(c){return !c.blocked;});
-  if(!visible.length){
+
+  // Count da-votare and votati
+  var all=concorrenti.map(function(c,i){return {c:c,idx:i};}).filter(function(x){return !x.c.blocked;});
+  var daVotare=all.filter(function(x){return !voti[x.idx];});
+  var votati=all.filter(function(x){return !!voti[x.idx];});
+
+  // Sort by numero
+  function byNum(a,b){return (a.c.numero||9999)-(b.c.numero||9999);}
+  daVotare.sort(byNum); votati.sort(byNum);
+
+  // Update tab counts
+  var cDa=document.getElementById('tab-count-da-votare');
+  var cVot=document.getElementById('tab-count-votati');
+  if(cDa) cDa.textContent=daVotare.length;
+  if(cVot) cVot.textContent=votati.length;
+
+  if(!all.length){
     list.innerHTML='<div class="empty"><div style="font-size:44px;margin-bottom:12px">⏳</div>In attesa dei partecipanti dall\'organizzatore...</div>';
     document.getElementById('g-classifica').style.display='none';
     return;
   }
-  var hasVotes=Object.keys(voti).length>0;
+
+  var hasVotes=votati.length>0;
   document.getElementById('g-classifica').style.display=hasVotes?'block':'none';
 
+  var items = voteTab==='da-votare' ? daVotare : votati;
+
+  if(!items.length){
+    var emptyMsg = voteTab==='da-votare'
+      ? '<div class="empty"><div style="font-size:44px;margin-bottom:12px">✅</div>Hai votato tutti i partecipanti!</div>'
+      : '<div class="empty"><div style="font-size:44px;margin-bottom:12px">📋</div>Nessun voto ancora espresso</div>';
+    list.innerHTML=emptyMsg;
+    document.getElementById('g-counts').textContent=votati.length+' votati';
+    return;
+  }
+
+  // Filter by genre tab
   GENERI.forEach(function(genere){
     if(filtroGiudice!=='Tutti'&&filtroGiudice!==genere) return;
     var col=COLORS[genere];
-    var items=concorrenti.map(function(c,i){return {c:c,idx:i};}).filter(function(x){return x.c.genere===genere&&!x.c.blocked;});
-    if(!items.length) return;
+    var filtered=items.filter(function(x){return x.c.genere===genere;});
+    if(!filtered.length) return;
     var sec=document.createElement('div'); sec.className='genre-sec';
     var hdr=document.createElement('div'); hdr.className='genre-hdr';
     var bar=document.createElement('div'); bar.className='genre-bar'; bar.style.background=col.accent;
@@ -1287,12 +1337,12 @@ function renderGiudice(){
     var flex=document.createElement('div'); flex.className='genre-flex'; flex.style.background=col.light;
     hdr.appendChild(bar); hdr.appendChild(lbl); hdr.appendChild(flex);
     sec.appendChild(hdr);
-    items.forEach(function(item){
+    filtered.forEach(function(item){
       sec.appendChild(makeParticipantCard(item.c,item.idx,col,false));
     });
     list.appendChild(sec);
   });
-  document.getElementById('g-counts').textContent=Object.keys(voti).length+' votati';
+  document.getElementById('g-counts').textContent=votati.length+' votati';
 }
 
 function makeParticipantCard(c,idx,col,isAdmin){
@@ -1489,6 +1539,7 @@ function saveVote(){
   voti[currentIdx]={scores:scores,note:document.getElementById('vote-notes').value};
   syncSave();
   showToast('✓ Voto salvato!');
+  voteTab='da-votare'; // return to da-votare after saving
   showScreen(mode==='giudice'?'giudice':'organizzatore');
   renderCurrent();
 }
@@ -1558,7 +1609,7 @@ function updateOTipoSel(){
     if(t===selTipo){b.style.borderColor='#92400e';b.style.background='#fef3c7';b.style.color='#92400e';}
     else{b.style.borderColor='#e5e7eb';b.style.background='white';b.style.color='#9ca3af';}
   });
-  document.getElementById('o-cat-wrap').style.display=selTipo==='Gruppo'?'block':'none';
+  document.getElementById('o-cat-wrap').style.display='block';
 }
 function updateOCatSel(){
   document.querySelectorAll('[data-oc]').forEach(function(b){
@@ -1589,7 +1640,7 @@ function doAggiungi(){
   var name=document.getElementById('o-new-name').value.trim();
   if(!name) return;
   var nextNum = concorrenti.length + 1;
-  concorrenti.push({nome:name,tipo:selTipo,genere:selGenere,catGruppo:selTipo==='Gruppo'?selCat:null,blocked:false,numero:nextNum});
+  concorrenti.push({nome:name,tipo:selTipo,genere:selGenere,catGruppo:selCat,blocked:false,numero:nextNum});
   document.getElementById('o-new-name').value='';
   syncSave(); renderOrganizzatore();
 }
